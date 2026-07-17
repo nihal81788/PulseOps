@@ -1,15 +1,14 @@
 const { Pool } = require('pg');
-require('dotenv').config();
 
 const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  user: process.env.DB_USER || 'pulseops_user',
+  password: process.env.DB_PASSWORD || 'pulseops_secret',
+  database: process.env.DB_NAME || 'pulseops_db',
 });
 
-pool.on('connect', () => console.log('Connected to TimescaleDB'));
-pool.on('error', (err) => { console.error('DB error:', err); process.exit(1); });
+pool.on('connect', () => console.log('✅ Connected to TimescaleDB'));
+pool.on('error', (err) => { console.error('❌ DB error:', err); process.exit(1); });
 
 module.exports = pool;
