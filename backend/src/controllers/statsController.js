@@ -185,7 +185,7 @@ const getSSLInfo = async (req, res) => {
       ssl: {
         ...cert,
         expiry_warning: warning,
-        expiry_warning_message: warning ? \`⚠️ Certificate expires in \${cert.days_until_expiry} days!\` : null,
+        expiry_warning_message: warning ? `⚠️ Certificate expires in ${cert.days_until_expiry} days!` : null,
       }
     });
   } catch (error) {
