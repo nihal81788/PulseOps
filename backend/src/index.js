@@ -20,6 +20,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/monitors', require('./routes/monitors'));
 app.use('/api/alert-rules', require('./routes/alertRules'));
+app.use('/api/incidents', require('./routes/incidents'));
+app.use('/api/oncall', require('./routes/oncall'));
 app.use('/api', require('./routes/stats'));
 app.get('/api/monitors/:id/uptime-bars', require('./controllers/statsController').getUptimeBars);
 app.get('/api/monitors/:id/ping-now-history', require('./controllers/statsController').getPingHistory);

@@ -156,20 +156,46 @@ async function extractAndSaveSSLInfo(monitorId, url) {
   }
 }
 
+const { dispatchAlerts, sendResolutionAlert } = require('../services/alertService');
+const { createIncident, resolveIncident } = require('../controllers/incidentController');
+
 async function checkAndTriggerAlerts(monitorId, result) {
-  if (result.isUp) return;
   const recentResults = await pool.query(
-    `SELECT is_up FROM ping_results WHERE monitor_id = $1 ORDER BY time DESC LIMIT 10`,
+    `SELECT is_up, error_message FROM ping_results WHERE monitor_id = $1 ORDER BY time DESC LIMIT 10`,
     [monitorId]
   );
+
+  if (recentResults.rows.length === 0) return;
+
   let consecutiveFailures = 0;
-  for (const row of recentResults.rows) {
+  let wasUpBefore = false;
+
+  for (let i = 0; i < recentResults.rows.length; i++) {
+    const row = recentResults.rows[i];
+    if (i === 0 && row.is_up) {
+      wasUpBefore = true;
+      break;
+    }
     if (!row.is_up) consecutiveFailures++;
     else break;
   }
-  if (consecutiveFailures >= 2) {
-    console.log(`🚨 ALERT: Monitor ${monitorId} has ${consecutiveFailures} consecutive failures`);
+
+  if (wasUpBefore && recentResults.rows.length > 1 && !recentResults.rows[1].is_up) {
+    console.log(`✅ Monitor ${monitorId} recovered`);
+    await resolveIncident(monitorId);
+    await sendResolutionAlert(monitorId);
+    return;
   }
+
+  if (consecutiveFailures === 0) return;
+
+  console.log(`⚠️ Monitor ${monitorId}: ${consecutiveFailures} consecutive failures`);
+
+  if (consecutiveFailures >= 2) {
+    await createIncident(monitorId);
+  }
+
+  await dispatchAlerts(monitorId, consecutiveFailures, result.errorMessage || `HTTP ${result.statusCode}`);
 }
 
 const pingWorker = new Worker('ping-queue', processPingJob, {
