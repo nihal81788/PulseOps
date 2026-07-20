@@ -3,15 +3,51 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.use(helmet());
 app.use(morgan('dev'));
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
 app.use(express.json({ strict: false }));
 app.use(express.urlencoded({ extended: true }));
+
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
+
+global.io = io;
+app.set('io', io);
+
+io.on('connection', (socket) => {
+  console.log(`🔌 Client connected: ${socket.id}`);
+  
+  socket.on('subscribe', (monitorIds) => {
+    if (Array.isArray(monitorIds)) {
+      monitorIds.forEach((id) => socket.join(`monitor:${id}`));
+      console.log(`📡 Client ${socket.id} subscribed to monitors: ${monitorIds.join(', ')}`);
+    }
+  });
+  
+  socket.on('unsubscribe', (monitorIds) => {
+    if (Array.isArray(monitorIds)) {
+      monitorIds.forEach((id) => socket.leave(`monitor:${id}`));
+      console.log(`🔌 Client ${socket.id} unsubscribed from monitors: ${monitorIds.join(', ')}`);
+    }
+  });
+  
+  socket.on('disconnect', () => {
+    console.log(`🔌 Client disconnected: ${socket.id}`);
+  });
+});
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'PulseOps API' });
@@ -23,6 +59,7 @@ app.use('/api/alert-rules', require('./routes/alertRules'));
 app.use('/api/incidents', require('./routes/incidents'));
 app.use('/api/oncall', require('./routes/oncall'));
 app.use('/api', require('./routes/stats'));
+app.use('/status', require('./routes/statusPages'));
 app.get('/api/monitors/:id/uptime-bars', require('./controllers/statsController').getUptimeBars);
 app.get('/api/monitors/:id/ping-now-history', require('./controllers/statsController').getPingHistory);
 
@@ -52,7 +89,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => console.log(`🚀 PulseOps backend running on http://localhost:${PORT}`));
+httpServer.listen(PORT, () => console.log(`🚀 PulseOps backend running on http://localhost:${PORT}`));
 
 require('./workers/pingWorker');
 
@@ -61,11 +98,9 @@ async function restoreMonitorSchedules() {
   const { scheduleMonitor } = require('./queues/pingQueue');
   try {
     const result = await pool.query('SELECT id, url, check_interval FROM monitors WHERE is_active = true');
-    console.log(`🔄 Restoring ${result.rows.length} monitor schedules...`);
     for (const monitor of result.rows) {
       await scheduleMonitor(monitor.id, monitor.url, monitor.check_interval);
     }
-    console.log('✅ All monitor schedules restored');
   } catch (error) {
     console.error('Failed to restore schedules:', error);
   }
@@ -73,4 +108,4 @@ async function restoreMonitorSchedules() {
 
 restoreMonitorSchedules();
 
-module.exports = app;
+module.exports = { app, io, httpServer };
