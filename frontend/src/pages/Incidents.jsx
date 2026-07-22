@@ -34,6 +34,16 @@ export default function Incidents() {
               <p style={{ color:'#64748b', fontSize:'13px', marginTop:'4px' }}>{incident.monitor_url}</p>
               <p style={{ color:'#94a3b8', fontSize:'12px', marginTop:'4px' }}>Started: {new Date(incident.started_at).toLocaleString()}</p>
               {incident.root_cause && <p style={{ color:'#94a3b8', fontSize:'12px', marginTop:'4px' }}>Root cause: {incident.root_cause}</p>}
+              {!incident.is_resolved && (
+                <div style={{ marginTop: '12px' }}>
+                  <button onClick={() => {
+                    apiClient.post(`/incidents/${incident.id}/snooze`, { minutes: 30 })
+                      .then(() => alert('Incident snoozed for 30 minutes.'));
+                  }} style={{ padding:'6px 12px', background:'#334155', color:'#f1f5f9', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'12px', fontWeight:'600' }}>
+                    Snooze 30min
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

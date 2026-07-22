@@ -129,6 +129,19 @@ async function dispatchAlerts(monitorId, failureCount, errorMessage) {
       [monitorId]
     );
 
+    const activeIncidentResult = await pool.query(
+      'SELECT snoozed_until FROM incidents WHERE monitor_id = $1 AND is_resolved = false LIMIT 1',
+      [monitorId]
+    );
+
+    if (activeIncidentResult.rows.length > 0) {
+      const activeIncident = activeIncidentResult.rows[0];
+      if (activeIncident.snoozed_until && new Date(activeIncident.snoozed_until) > new Date()) {
+        console.log(`⏳ Alert suppressed for ${monitor.name} — incident is snoozed until ${activeIncident.snoozed_until}`);
+        return;
+      }
+    }
+
     const now = new Date();
 
     for (const rule of rulesResult.rows) {

@@ -59,7 +59,8 @@ CREATE TABLE incidents (
   resolved_at TIMESTAMPTZ,
   is_resolved BOOLEAN DEFAULT FALSE,
   root_cause TEXT,
-  resolution_notes TEXT
+  resolution_notes TEXT,
+  snoozed_until TIMESTAMPTZ
 );
 
 CREATE TABLE alert_rules (
