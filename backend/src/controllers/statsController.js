@@ -203,7 +203,7 @@ const getUptimeBars = async (req, res) => {
     }
     const result = await pool.query(
       `SELECT
-        time_bucket('1 day', time) AS day,
+        date_trunc('day', time) AS day,
         COUNT(*) AS total,
         COUNT(*) FILTER (WHERE is_up = true) AS up_count,
         ROUND(
