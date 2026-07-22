@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { scheduleMonitor, cancelMonitorJob } = require('../queues/pingQueue');
 
 const VALID_INTERVALS = [30, 60, 300];
 
@@ -28,6 +29,7 @@ const createMonitor = async (req, res) => {
       `INSERT INTO monitors (user_id, name, url, check_interval) VALUES ($1, $2, $3, $4) RETURNING *`,
       [userId, name.trim(), url, Number(check_interval)]
     );
+    await scheduleMonitor(result.rows[0].id, url, Number(check_interval));
     res.status(201).json({ message: 'Monitor created successfully', monitor: result.rows[0] });
   } catch (error) {
     console.error('CreateMonitor error:', error);
@@ -98,7 +100,13 @@ const updateMonitor = async (req, res) => {
       `UPDATE monitors SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
       values
     );
-    res.json({ message: 'Monitor updated', monitor: result.rows[0] });
+    const m = result.rows[0];
+    if (m.is_active) {
+      await scheduleMonitor(m.id, m.url, m.check_interval);
+    } else {
+      await cancelMonitorJob(m.id);
+    }
+    res.json({ message: 'Monitor updated', monitor: m });
   } catch (error) {
     console.error('UpdateMonitor error:', error);
     res.status(500).json({ error: 'Failed to update monitor' });
@@ -113,6 +121,7 @@ const deleteMonitor = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Monitor not found' });
     }
+    await cancelMonitorJob(id);
     res.json({ message: 'Monitor deleted successfully' });
   } catch (error) {
     console.error('DeleteMonitor error:', error);

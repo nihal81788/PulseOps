@@ -8,6 +8,9 @@ const redisConnection = {
   port: parseInt(process.env.REDIS_PORT || '6379'),
 };
 
+const REGIONS = ['us-east', 'eu-west', 'ap-south', 'us-west'];
+const processingTimes = [];
+
 async function processPingJob(job) {
   const { monitorId, url } = job.data;
   const startTime = Date.now();
@@ -22,6 +25,7 @@ async function processPingJob(job) {
     tlsHandshakeMs: null,
     ttfbMs: null,
     totalMs: null,
+    region: REGIONS[Math.floor(Math.random() * REGIONS.length)],
   };
 
   try {
@@ -84,8 +88,13 @@ async function processPingJob(job) {
       dnsLookupMs: result.dnsLookupMs,
       tlsHandshakeMs: result.tlsHandshakeMs,
       timestamp: new Date().toISOString(),
+      region: result.region,
     });
   }
+
+  const processTime = Date.now() - (job.processedOn || startTime);
+  processingTimes.push(processTime);
+  if (processingTimes.length > 100) processingTimes.shift();
 
   return result;
 }
@@ -95,8 +104,8 @@ async function savePingResult(result) {
     await pool.query(
       `INSERT INTO ping_results
         (time, monitor_id, status_code, is_up, response_time_ms,
-         dns_lookup_ms, tcp_connect_ms, tls_handshake_ms, ttfb_ms, error_message)
-       VALUES (NOW(), $1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+         dns_lookup_ms, tcp_connect_ms, tls_handshake_ms, ttfb_ms, error_message, region)
+       VALUES (NOW(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         result.monitorId,
         result.statusCode,
@@ -107,6 +116,7 @@ async function savePingResult(result) {
         result.tlsHandshakeMs,
         result.ttfbMs,
         result.errorMessage,
+        result.region,
       ]
     );
   } catch (error) {
@@ -200,8 +210,32 @@ async function checkAndTriggerAlerts(monitorId, result) {
 
 const pingWorker = new Worker('ping-queue', processPingJob, {
   connection: redisConnection,
-  concurrency: 5,
+  concurrency: 3,
 });
+
+async function adjustWorkerConcurrency() {
+  const { getQueueStats } = require('../queues/pingQueue');
+  try {
+    const stats = await getQueueStats();
+    if (stats.waiting > 50) pingWorker.concurrency = 20;
+    else if (stats.waiting > 20) pingWorker.concurrency = 10;
+    else if (stats.waiting < 5) pingWorker.concurrency = 3;
+  } catch (e) {
+    console.error('Failed to adjust concurrency', e.message);
+  }
+}
+setInterval(adjustWorkerConcurrency, 15000);
+
+async function getWorkerStats() {
+  const { getQueueStats } = require('../queues/pingQueue');
+  const stats = await getQueueStats();
+  const avgProcessingMs = processingTimes.length ? processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length : 0;
+  return {
+    concurrency: pingWorker.concurrency,
+    avgProcessingMs,
+    queueDepth: stats.waiting
+  };
+}
 
 pingWorker.on('failed', (job, error) => {
   console.error(`❌ Worker job failed for monitor ${job?.data?.monitorId}:`, error.message);
@@ -211,6 +245,6 @@ pingWorker.on('error', (error) => {
   console.error('Worker error:', error);
 });
 
-console.log('🔄 Ping worker started with concurrency: 5');
+console.log('🔄 Ping worker started with concurrency: 3');
 
-module.exports = pingWorker;
+module.exports = { pingWorker, getWorkerStats };

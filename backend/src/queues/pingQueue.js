@@ -21,6 +21,10 @@ const pingQueue = new Queue('ping-queue', {
 async function scheduleMonitor(monitorId, url, intervalSeconds) {
   const jobId = `monitor-${monitorId}`;
   await cancelMonitorJob(monitorId);
+  
+  // Fire an immediate ping so the user gets instant feedback
+  await pingQueue.add('ping', { monitorId, url }, { priority: 1, jobId: `immediate-${monitorId}-${Date.now()}` });
+
   await pingQueue.add(
     'ping',
     { monitorId, url },

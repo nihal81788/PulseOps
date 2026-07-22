@@ -59,15 +59,21 @@ app.use('/api/alert-rules', require('./routes/alertRules'));
 app.use('/api/incidents', require('./routes/incidents'));
 app.use('/api/oncall', require('./routes/oncall'));
 app.use('/api', require('./routes/stats'));
+app.use('/api', require('./routes/regionalStats'));
 app.use('/status', require('./routes/statusPages'));
 app.get('/api/monitors/:id/uptime-bars', require('./controllers/statsController').getUptimeBars);
 app.get('/api/monitors/:id/ping-now-history', require('./controllers/statsController').getPingHistory);
 
 app.get('/api/workers/status', async (req, res) => {
   const { getQueueStats } = require('./queues/pingQueue');
+  const pingWorker = require('./workers/pingWorker');
   try {
     const stats = await getQueueStats();
-    res.json({ status: 'running', queue: stats });
+    let workerStats = {};
+    if (pingWorker.getWorkerStats) {
+      workerStats = await pingWorker.getWorkerStats();
+    }
+    res.json({ status: 'running', queue: stats, ...workerStats });
   } catch (e) {
     res.status(500).json({ error: 'Failed to get stats' });
   }

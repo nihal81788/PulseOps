@@ -30,7 +30,8 @@ CREATE TABLE ping_results (
   tcp_connect_ms FLOAT,
   tls_handshake_ms FLOAT,
   ttfb_ms FLOAT,
-  error_message TEXT
+  error_message TEXT,
+  region VARCHAR(50) DEFAULT 'us-east'
 );
 
 SELECT create_hypertable('ping_results', 'time');
