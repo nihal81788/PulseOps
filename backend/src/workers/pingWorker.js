@@ -26,6 +26,8 @@ async function processPingJob(job) {
     ttfbMs: null,
     totalMs: null,
     region: REGIONS[Math.floor(Math.random() * REGIONS.length)],
+    contentWarning: false,
+    contentWarningMessage: null,
   };
 
   try {
@@ -44,6 +46,15 @@ async function processPingJob(job) {
     result.tlsHandshakeMs = t.tls || 0;
     result.ttfbMs = t.firstByte || 0;
     result.totalMs = t.total || (Date.now() - startTime);
+
+    const contentType = response.headers['content-type'] || '';
+    const bodyStr = typeof response.body === 'string' ? response.body.toLowerCase() : '';
+    const errorIndicators = ['<title>404</title>', 'not found', 'error', 'forbidden', 'access denied'];
+    
+    if (errorIndicators.some(indicator => bodyStr.includes(indicator))) {
+      result.contentWarning = true;
+      result.contentWarningMessage = 'Response body contains error indicators';
+    }
 
     if (url.startsWith('https://')) {
       await extractAndSaveSSLInfo(monitorId, url);
@@ -89,6 +100,7 @@ async function processPingJob(job) {
       tlsHandshakeMs: result.tlsHandshakeMs,
       timestamp: new Date().toISOString(),
       region: result.region,
+      contentWarning: result.contentWarning,
     });
   }
 
@@ -104,8 +116,8 @@ async function savePingResult(result) {
     await pool.query(
       `INSERT INTO ping_results
         (time, monitor_id, status_code, is_up, response_time_ms,
-         dns_lookup_ms, tcp_connect_ms, tls_handshake_ms, ttfb_ms, error_message, region)
-       VALUES (NOW(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+         dns_lookup_ms, tcp_connect_ms, tls_handshake_ms, ttfb_ms, error_message, region, content_warning)
+       VALUES (NOW(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         result.monitorId,
         result.statusCode,
@@ -117,6 +129,7 @@ async function savePingResult(result) {
         result.ttfbMs,
         result.errorMessage,
         result.region,
+        result.contentWarning,
       ]
     );
   } catch (error) {

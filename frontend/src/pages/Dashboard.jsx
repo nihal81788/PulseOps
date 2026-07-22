@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
 import useWebSocket from '../hooks/useWebSocket';
+import WorkerHealth from '../components/WorkerHealth';
 
 export default function Dashboard() {
   const [monitors, setMonitors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showHealth, setShowHealth] = useState(false);
   const [newMonitor, setNewMonitor] = useState({ name:'', url:'', check_interval:60 });
   const [error, setError] = useState('');
 
@@ -52,11 +54,19 @@ export default function Dashboard() {
             </span>
           </p>
         </div>
-        <button onClick={() => setShowForm(true)}
-          style={{ padding:'10px 20px', background:'#3b82f6', color:'#fff', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' }}>
-          + Add Monitor
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button onClick={() => setShowHealth(!showHealth)}
+            style={{ padding:'10px 20px', background:'#334155', color:'#f1f5f9', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' }}>
+            System Health
+          </button>
+          <button onClick={() => setShowForm(true)}
+            style={{ padding:'10px 20px', background:'#3b82f6', color:'#fff', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' }}>
+            + Add Monitor
+          </button>
+        </div>
       </div>
+
+      {showHealth && <WorkerHealth />}
 
       {showForm && (
         <div style={{ background:'#1e293b', borderRadius:'12px', padding:'24px', marginBottom:'24px' }}>
@@ -89,6 +99,7 @@ export default function Dashboard() {
             const live = latestResults[monitor.id];
             const isUp = live ? live.isUp : monitor.is_currently_up;
             const responseTime = live ? live.responseTimeMs : monitor.last_response_time_ms;
+            const contentWarning = live ? live.contentWarning : monitor.content_warning;
             const dotColor = isUp === null || isUp === undefined ? '#94a3b8' : isUp ? '#22c55e' : '#ef4444';
             return (
               <div key={monitor.id} style={{ background:'#1e293b', borderRadius:'12px', padding:'20px 24px', display:'flex', alignItems:'center', gap:'16px', borderLeft:`4px solid ${dotColor}` }}>
@@ -97,6 +108,7 @@ export default function Dashboard() {
                   <Link to={`/monitor/${monitor.id}`} style={{ color:'#f1f5f9', fontWeight:'600', textDecoration:'none', fontSize:'16px' }}>{monitor.name}</Link>
                   <p style={{ color:'#64748b', fontSize:'13px', marginTop:'2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{monitor.url}</p>
                 </div>
+                {contentWarning && <span title="Content Warning" style={{ fontSize: '14px' }}>⚠️</span>}
                 {responseTime && <div style={{ color:'#94a3b8', fontSize:'14px' }}>{Math.round(responseTime)}ms</div>}
                 <div style={{ background:'#0f172a', borderRadius:'6px', padding:'4px 10px', color:'#64748b', fontSize:'12px' }}>{monitor.check_interval}s</div>
                 <button onClick={() => deleteMonitor(monitor.id)} style={{ background:'none', border:'none', color:'#64748b', cursor:'pointer', fontSize:'18px' }}>×</button>
