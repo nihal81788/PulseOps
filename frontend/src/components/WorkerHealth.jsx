@@ -18,38 +18,43 @@ export default function WorkerHealth() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!stats) return <div style={{ color: '#94a3b8' }}>Loading worker health...</div>;
+  if (!stats) return <div style={{ color: '#64748b' }}>Loading worker health...</div>;
 
   const waiting = stats.queue?.waiting || 0;
-  let statusColor = '#22c55e'; // green
-  if (waiting >= 10 && waiting <= 30) statusColor = '#eab308'; // yellow
-  else if (waiting > 30) statusColor = '#ef4444'; // red
+  let statusColor = '#16a34a'; // green
+  let statusBg = '#dcfce7';
+  if (waiting >= 10 && waiting <= 30) {
+    statusColor = '#92400e'; // yellow
+    statusBg = '#fef9c3';
+  } else if (waiting > 30) {
+    statusColor = '#dc2626'; // red
+    statusBg = '#fee2e2';
+  }
 
   return (
-    <div style={{ background: '#1e293b', borderRadius: '12px', padding: '20px', marginBottom: '24px', color: '#f1f5f9', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
+    <div style={{ background: '#ffffff', borderRadius: '10px', padding: '16px 20px', marginBottom: '24px', color: '#0f172a', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap', border: '1px solid #e2e8f0' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: statusColor }}></div>
-        <span style={{ fontWeight: '600' }}>System Status</span>
+        <span style={{ fontWeight: '600', color: statusColor, background: statusBg, padding: '4px 12px', borderRadius: '999px', fontSize: '13px' }}>System Status</span>
       </div>
-      <div>
-        <div style={{ fontSize: '12px', color: '#94a3b8' }}>Concurrency</div>
-        <div style={{ fontSize: '18px', fontWeight: '600' }}>{stats.concurrency || 0}</div>
+      <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '24px' }}>
+        <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Concurrency</div>
+        <div style={{ fontSize: '20px', fontWeight: '700' }}>{stats.concurrency || 0}</div>
       </div>
-      <div>
-        <div style={{ fontSize: '12px', color: '#94a3b8' }}>Queue (Waiting)</div>
-        <div style={{ fontSize: '18px', fontWeight: '600' }}>{waiting}</div>
+      <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '24px' }}>
+        <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Queue</div>
+        <div style={{ fontSize: '20px', fontWeight: '700' }}>{waiting}</div>
       </div>
-      <div>
-        <div style={{ fontSize: '12px', color: '#94a3b8' }}>Completed</div>
-        <div style={{ fontSize: '18px', fontWeight: '600' }}>{stats.queue?.completed || 0}</div>
+      <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '24px' }}>
+        <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Completed</div>
+        <div style={{ fontSize: '20px', fontWeight: '700' }}>{stats.queue?.completed || 0}</div>
       </div>
-      <div>
-        <div style={{ fontSize: '12px', color: '#94a3b8' }}>Failed</div>
-        <div style={{ fontSize: '18px', fontWeight: '600' }}>{stats.queue?.failed || 0}</div>
+      <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '24px' }}>
+        <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Failed</div>
+        <div style={{ fontSize: '20px', fontWeight: '700' }}>{stats.queue?.failed || 0}</div>
       </div>
-      <div>
-        <div style={{ fontSize: '12px', color: '#94a3b8' }}>Avg Processing</div>
-        <div style={{ fontSize: '18px', fontWeight: '600' }}>{Math.round(stats.avgProcessingMs || 0)}ms</div>
+      <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '24px' }}>
+        <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Avg Processing</div>
+        <div style={{ fontSize: '20px', fontWeight: '700' }}>{Math.round(stats.avgProcessingMs || 0)}ms</div>
       </div>
     </div>
   );

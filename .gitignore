@@ -1,7 +1,29 @@
-node_modules
+# Environment files - NEVER commit these
 .env
-dist
-build
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build output
+dist/
+build/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
 *.log
-.agents/
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/

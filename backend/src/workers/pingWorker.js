@@ -3,10 +3,12 @@ const got = require('got');
 const https = require('https');
 const pool = require('../config/db');
 
-const redisConnection = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-};
+const redisConnection = process.env.REDIS_URL
+  ? { url: process.env.REDIS_URL }
+  : {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379'),
+    };
 
 const REGIONS = ['us-east', 'eu-west', 'ap-south', 'us-west'];
 const processingTimes = [];

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 
-const COLOR_MAP = { green: '#22c55e', yellow: '#eab308', red: '#ef4444' };
+const COLOR_MAP = { green: '#10b981', yellow: '#f59e0b', red: '#ef4444' };
 
 export default function UptimeBars({ monitorId }) {
   const [bars, setBars] = useState([]);
@@ -18,15 +18,15 @@ export default function UptimeBars({ monitorId }) {
       .catch(() => {});
   }, [monitorId]);
 
-  if (loading) return <div style={{ color:'#94a3b8' }}>Loading...</div>;
+  if (loading) return <div style={{ color:'#64748b' }}>Loading...</div>;
 
   return (
     <div>
       <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'8px' }}>
-        <span style={{ color:'#94a3b8', fontSize:'13px' }}>Last 90 days</span>
-        {uptime !== null && <span style={{ color:'#22c55e', fontSize:'13px', fontWeight:'600' }}>{uptime}% uptime</span>}
+        <span style={{ color:'#64748b', fontSize:'13px' }}>Last 90 days</span>
+        {uptime !== null && <span style={{ color:'#10b981', fontSize:'13px', fontWeight:'600' }}>{uptime}% uptime</span>}
       </div>
-      <div style={{ display:'flex', gap:'2px', alignItems:'flex-end', height:'32px' }}>
+      <div style={{ display:'flex', gap:'2px', alignItems:'flex-end', height:'32px', background: '#f1f5f9', borderRadius: '4px', padding: '4px' }}>
         {bars.length === 0
           ? <span style={{ color:'#64748b', fontSize:'12px' }}>No data yet</span>
           : bars.map((bar, i) => (

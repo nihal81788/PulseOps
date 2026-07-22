@@ -36,36 +36,36 @@ export default function LatencyChart({ monitorId, liveResult }) {
   const option = {
     backgroundColor: 'transparent',
     grid: { top:30, right:20, bottom:40, left:60 },
-    tooltip: { trigger:'axis', formatter: p => `${p[0].axisValue}<br/><b>${p[0].data}ms</b>` },
+    tooltip: { trigger:'axis', backgroundColor:'#ffffff', borderColor:'#e2e8f0', textStyle:{ color:'#0f172a' }, formatter: p => `${p[0].axisValue}<br/><b>${p[0].data}ms</b>` },
     legend: {
       data: ['Response Time', 'P50', 'P95'],
-      textStyle: { color: '#94a3b8' },
+      textStyle: { color: '#64748b' },
       bottom: 0,
     },
-    xAxis: { type:'category', data: data.map(p => p.time), axisLabel: { color:'#94a3b8', fontSize:10 }, axisLine: { lineStyle: { color:'#334155' } } },
-    yAxis: { type:'value', axisLabel: { color:'#94a3b8', formatter: v => `${v}ms` }, splitLine: { lineStyle: { color:'#1e293b' } } },
+    xAxis: { type:'category', data: data.map(p => p.time), axisLabel: { color:'#94a3b8', fontSize:10 }, axisLine: { lineStyle: { color:'#e2e8f0' } } },
+    yAxis: { type:'value', axisLabel: { color:'#94a3b8', formatter: v => `${v}ms` }, splitLine: { lineStyle: { color:'#f1f5f9' } } },
     series: [{ 
       name: 'Response Time',
       type:'line', 
       data: data.map(p => p.ms), 
       smooth:true, 
       symbol:'none', 
-      lineStyle: { color:'#3b82f6', width:2 }, 
-      areaStyle: { color: { type:'linear', x:0,y:0,x2:0,y2:1, colorStops: [{ offset:0, color:'rgba(59,130,246,0.3)' }, { offset:1, color:'rgba(59,130,246,0)' }] } },
+      lineStyle: { color:'#6366f1', width:2 }, 
+      areaStyle: { color: { type:'linear', x:0,y:0,x2:0,y2:1, colorStops: [{ offset:0, color:'rgba(99,102,241,0.15)' }, { offset:1, color:'rgba(99,102,241,0)' }] } },
       markLine: {
         silent: true,
         data: [
-          { yAxis: p50, name: 'P50', lineStyle: { color: '#3b82f6', type: 'dashed' } },
-          { yAxis: p95, name: 'P95', lineStyle: { color: '#f59e0b', type: 'dashed' } }
+          ...(p50 != null ? [{ yAxis: p50, name: 'P50', lineStyle: { color: '#10b981', type: 'dashed' } }] : []),
+          ...(p95 != null ? [{ yAxis: p95, name: 'P95', lineStyle: { color: '#f59e0b', type: 'dashed' } }] : [])
         ],
-        label: { formatter: '{b}: {c}ms', color: '#94a3b8' }
+        label: { formatter: '{b}: {c}ms', color: '#64748b' }
       }
     }],
   };
 
   return (
     <div>
-      <h3 style={{ color:'#f1f5f9', marginBottom:'12px', fontSize:'16px' }}>Response Time <span style={{ fontSize:'12px', color:'#22c55e' }}>● LIVE</span></h3>
+      <h3 style={{ color:'#0f172a', marginBottom:'12px', fontSize:'16px' }}>Response Time <span style={{ fontSize:'12px', color:'#10b981' }}>● LIVE</span></h3>
       {data.length === 0 ? <p style={{ color:'#64748b' }}>No data yet — trigger a ping first.</p> : <ReactECharts option={option} style={{ height:'220px' }} />}
     </div>
   );

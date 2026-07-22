@@ -40,27 +40,27 @@ export default function Dashboard() {
     setMonitors(prev => prev.filter(m => m.id !== id));
   };
 
-  if (loading) return <div style={{ padding:'40px', color:'#94a3b8' }}>Loading...</div>;
+  if (loading) return <div style={{ padding:'40px', color:'#64748b' }}>Loading...</div>;
 
   return (
-    <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'32px 24px' }}>
+    <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'32px 24px', background:'#f8fafc', minHeight:'100vh' }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'32px' }}>
         <div>
-          <h1 style={{ color:'#f1f5f9', fontSize:'26px', fontWeight:'700' }}>Monitors</h1>
-          <p style={{ color:'#94a3b8', marginTop:'4px', fontSize:'14px' }}>
+          <h1 style={{ color:'#0f172a', fontSize:'24px', fontWeight:'700' }}>Monitors</h1>
+          <p style={{ color:'#64748b', marginTop:'4px', fontSize:'14px' }}>
             {monitors.length} endpoints
-            <span style={{ marginLeft:'12px', color: isConnected ? '#22c55e' : '#ef4444' }}>
+            <span style={{ marginLeft:'12px', color: isConnected ? '#10b981' : '#ef4444' }}>
               ● {isConnected ? 'Live' : 'Offline'}
             </span>
           </p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={() => setShowHealth(!showHealth)}
-            style={{ padding:'10px 20px', background:'#334155', color:'#f1f5f9', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' }}>
-            System Health
+            style={{ padding:'10px 20px', background:'#ffffff', color:'#0f172a', border:'1px solid #e2e8f0', borderRadius:'8px', cursor:'pointer', fontWeight:'600', boxShadow:'0 1px 2px rgba(0,0,0,0.04)' }}>
+            System Health ⌄
           </button>
           <button onClick={() => setShowForm(true)}
-            style={{ padding:'10px 20px', background:'#3b82f6', color:'#fff', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' }}>
+            style={{ padding:'10px 20px', background:'#6366f1', color:'#fff', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' }}>
             + Add Monitor
           </button>
         </div>
@@ -69,28 +69,28 @@ export default function Dashboard() {
       {showHealth && <WorkerHealth />}
 
       {showForm && (
-        <div style={{ background:'#1e293b', borderRadius:'12px', padding:'24px', marginBottom:'24px' }}>
-          <h3 style={{ color:'#f1f5f9', marginBottom:'16px' }}>Add Monitor</h3>
+        <div style={{ background:'#ffffff', borderRadius:'12px', padding:'24px', marginBottom:'24px', border:'1px solid #e2e8f0', boxShadow:'0 1px 3px rgba(0,0,0,0.06)' }}>
+          <h3 style={{ color:'#0f172a', marginBottom:'16px' }}>Add Monitor</h3>
           {error && <div style={{ color:'#ef4444', marginBottom:'12px', fontSize:'14px' }}>{error}</div>}
           <form onSubmit={addMonitor} style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}>
             <input placeholder="Name" value={newMonitor.name} onChange={e => setNewMonitor(p => ({...p, name:e.target.value}))} required
-              style={{ padding:'10px', borderRadius:'6px', border:'1px solid #334155', background:'#0f172a', color:'#f1f5f9', flex:'1', minWidth:'140px' }} />
+              style={{ padding:'10px 14px', borderRadius:'8px', border:'1px solid #e2e8f0', background:'#ffffff', color:'#0f172a', flex:'1', minWidth:'140px', outline:'none' }} />
             <input placeholder="https://example.com" value={newMonitor.url} onChange={e => setNewMonitor(p => ({...p, url:e.target.value}))} required
-              style={{ padding:'10px', borderRadius:'6px', border:'1px solid #334155', background:'#0f172a', color:'#f1f5f9', flex:'2', minWidth:'220px' }} />
+              style={{ padding:'10px 14px', borderRadius:'8px', border:'1px solid #e2e8f0', background:'#ffffff', color:'#0f172a', flex:'2', minWidth:'220px', outline:'none' }} />
             <select value={newMonitor.check_interval} onChange={e => setNewMonitor(p => ({...p, check_interval:parseInt(e.target.value)}))}
-              style={{ padding:'10px', borderRadius:'6px', border:'1px solid #334155', background:'#0f172a', color:'#f1f5f9' }}>
+              style={{ padding:'10px 14px', borderRadius:'8px', border:'1px solid #e2e8f0', background:'#ffffff', color:'#0f172a', outline:'none' }}>
               <option value={30}>Every 30s</option>
               <option value={60}>Every 60s</option>
               <option value={300}>Every 5min</option>
             </select>
-            <button type="submit" style={{ padding:'10px 20px', background:'#22c55e', color:'#fff', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'600' }}>Create</button>
-            <button type="button" onClick={() => setShowForm(false)} style={{ padding:'10px 20px', background:'#334155', color:'#f1f5f9', border:'none', borderRadius:'6px', cursor:'pointer' }}>Cancel</button>
+            <button type="submit" style={{ padding:'10px 20px', background:'#6366f1', color:'#fff', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' }}>Create</button>
+            <button type="button" onClick={() => setShowForm(false)} style={{ padding:'10px 20px', background:'#ffffff', color:'#64748b', border:'1px solid #e2e8f0', borderRadius:'8px', cursor:'pointer' }}>Cancel</button>
           </form>
         </div>
       )}
 
       {monitors.length === 0 ? (
-        <div style={{ textAlign:'center', color:'#94a3b8', padding:'60px' }}>
+        <div style={{ textAlign:'center', color:'#64748b', padding:'60px' }}>
           <p style={{ fontSize:'18px' }}>No monitors yet. Add your first URL.</p>
         </div>
       ) : (
@@ -100,18 +100,18 @@ export default function Dashboard() {
             const isUp = live ? live.isUp : monitor.is_currently_up;
             const responseTime = live ? live.responseTimeMs : monitor.last_response_time_ms;
             const contentWarning = live ? live.contentWarning : monitor.content_warning;
-            const dotColor = isUp === null || isUp === undefined ? '#94a3b8' : isUp ? '#22c55e' : '#ef4444';
+            const dotColor = isUp === null || isUp === undefined ? '#94a3b8' : isUp ? '#10b981' : '#ef4444';
             return (
-              <div key={monitor.id} style={{ background:'#1e293b', borderRadius:'12px', padding:'20px 24px', display:'flex', alignItems:'center', gap:'16px', borderLeft:`4px solid ${dotColor}` }}>
+              <div key={monitor.id} style={{ background:'#ffffff', borderRadius:'10px', padding:'16px 20px', display:'flex', alignItems:'center', gap:'16px', border:'1px solid #e2e8f0', boxShadow:'0 1px 2px rgba(0,0,0,0.04)', transition:'box-shadow 0.2s', cursor:'pointer' }}>
                 <div style={{ width:'12px', height:'12px', borderRadius:'50%', background:dotColor, flexShrink:0 }} />
                 <div style={{ flex:1, minWidth:0 }}>
-                  <Link to={`/monitor/${monitor.id}`} style={{ color:'#f1f5f9', fontWeight:'600', textDecoration:'none', fontSize:'16px' }}>{monitor.name}</Link>
+                  <Link to={`/monitor/${monitor.id}`} style={{ color:'#0f172a', fontWeight:'600', textDecoration:'none', fontSize:'16px' }}>{monitor.name}</Link>
                   <p style={{ color:'#64748b', fontSize:'13px', marginTop:'2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{monitor.url}</p>
                 </div>
                 {contentWarning && <span title="Content Warning" style={{ fontSize: '14px' }}>⚠️</span>}
-                {responseTime && <div style={{ color:'#94a3b8', fontSize:'14px' }}>{Math.round(responseTime)}ms</div>}
-                <div style={{ background:'#0f172a', borderRadius:'6px', padding:'4px 10px', color:'#64748b', fontSize:'12px' }}>{monitor.check_interval}s</div>
-                <button onClick={() => deleteMonitor(monitor.id)} style={{ background:'none', border:'none', color:'#64748b', cursor:'pointer', fontSize:'18px' }}>×</button>
+                {responseTime && <div style={{ color:'#64748b', fontSize:'13px' }}>{Math.round(responseTime)}ms</div>}
+                <div style={{ background:'#f1f5f9', borderRadius:'6px', padding:'2px 8px', color:'#475569', fontSize:'12px' }}>{monitor.check_interval}s</div>
+                <button onClick={() => deleteMonitor(monitor.id)} style={{ background:'none', border:'none', color:'#94a3b8', cursor:'pointer', fontSize:'18px' }}>×</button>
               </div>
             );
           })}

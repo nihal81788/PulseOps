@@ -11,21 +11,21 @@ export default function Incidents() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{ padding:'40px', color:'#94a3b8' }}>Loading...</div>;
+  if (loading) return <div style={{ padding:'40px', color:'#64748b' }}>Loading...</div>;
 
   return (
-    <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'32px 24px' }}>
-      <h1 style={{ color:'#f1f5f9', fontSize:'26px', fontWeight:'700', marginBottom:'28px' }}>Incidents</h1>
+    <div style={{ maxWidth:'1100px', margin:'0 auto', padding:'32px 24px', background:'#f8fafc', minHeight:'100vh' }}>
+      <h1 style={{ color:'#0f172a', fontSize:'24px', fontWeight:'700', marginBottom:'28px' }}>Incidents</h1>
       {incidents.length === 0 ? (
-        <p style={{ color:'#94a3b8' }}>No incidents yet — good news!</p>
+        <p style={{ color:'#64748b' }}>No incidents yet — good news!</p>
       ) : (
         <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
           {incidents.map(incident => (
-            <div key={incident.id} style={{ background:'#1e293b', borderRadius:'12px', padding:'20px 24px', borderLeft:`4px solid ${incident.is_resolved ? '#22c55e' : '#ef4444'}` }}>
+            <div key={incident.id} style={{ background:'#ffffff', borderRadius:'10px', padding:'20px 24px', border:'1px solid #e2e8f0', borderLeft:`3px solid ${incident.is_resolved ? '#10b981' : '#ef4444'}` }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <div>
-                  <span style={{ color:'#f1f5f9', fontWeight:'600' }}>{incident.monitor_name}</span>
-                  <span style={{ marginLeft:'12px', fontSize:'12px', padding:'2px 8px', borderRadius:'20px', background: incident.is_resolved ? '#dcfce7' : '#fef2f2', color: incident.is_resolved ? '#16a34a' : '#dc2626' }}>
+                  <span style={{ color:'#0f172a', fontWeight:'600' }}>{incident.monitor_name}</span>
+                  <span style={{ marginLeft:'12px', fontSize:'12px', padding:'2px 8px', borderRadius:'999px', background: incident.is_resolved ? '#dcfce7' : '#fee2e2', color: incident.is_resolved ? '#16a34a' : '#dc2626' }}>
                     {incident.is_resolved ? 'Resolved' : 'Open'}
                   </span>
                 </div>
@@ -33,13 +33,13 @@ export default function Incidents() {
               </div>
               <p style={{ color:'#64748b', fontSize:'13px', marginTop:'4px' }}>{incident.monitor_url}</p>
               <p style={{ color:'#94a3b8', fontSize:'12px', marginTop:'4px' }}>Started: {new Date(incident.started_at).toLocaleString()}</p>
-              {incident.root_cause && <p style={{ color:'#94a3b8', fontSize:'12px', marginTop:'4px' }}>Root cause: {incident.root_cause}</p>}
+              {incident.root_cause && <p style={{ color:'#64748b', fontSize:'12px', marginTop:'4px' }}>Root cause: {incident.root_cause}</p>}
               {!incident.is_resolved && (
                 <div style={{ marginTop: '12px' }}>
                   <button onClick={() => {
                     apiClient.post(`/incidents/${incident.id}/snooze`, { minutes: 30 })
                       .then(() => alert('Incident snoozed for 30 minutes.'));
-                  }} style={{ padding:'6px 12px', background:'#334155', color:'#f1f5f9', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'12px', fontWeight:'600' }}>
+                  }} style={{ padding:'6px 14px', background:'#f1f5f9', color:'#475569', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'12px' }}>
                     Snooze 30min
                   </button>
                 </div>

@@ -1,5 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS timescaledb;
-
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255) NOT NULL,
@@ -21,7 +19,7 @@ CREATE TABLE monitors (
 );
 
 CREATE TABLE ping_results (
-  time TIMESTAMPTZ NOT NULL,
+  time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   monitor_id UUID NOT NULL,
   status_code INTEGER,
   is_up BOOLEAN NOT NULL,
@@ -34,8 +32,6 @@ CREATE TABLE ping_results (
   region VARCHAR(50) DEFAULT 'us-east',
   content_warning BOOLEAN DEFAULT FALSE
 );
-
-SELECT create_hypertable('ping_results', 'time');
 
 CREATE TABLE ssl_certificates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

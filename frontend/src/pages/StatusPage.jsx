@@ -16,32 +16,32 @@ export default function StatusPage() {
       .catch(() => { setError('Failed to load'); setLoading(false); });
   }, [monitorId]);
 
-  if (loading) return <div style={{ padding:'40px', color:'#94a3b8', background:'#0f172a', minHeight:'100vh' }}>Loading...</div>;
-  if (error || !data) return <div style={{ padding:'40px', color:'#ef4444', background:'#0f172a', minHeight:'100vh' }}>Status page not found.</div>;
+  if (loading) return <div style={{ padding:'40px', color:'#64748b', background:'#f8fafc', minHeight:'100vh' }}>Loading...</div>;
+  if (error || !data) return <div style={{ padding:'40px', color:'#ef4444', background:'#f8fafc', minHeight:'100vh' }}>Status page not found.</div>;
 
-  const COLOR_MAP = { green:'#22c55e', yellow:'#eab308', red:'#ef4444' };
+  const COLOR_MAP = { green:'#10b981', yellow:'#f59e0b', red:'#ef4444' };
   const isOnline = data.current_status === 'online';
 
   return (
-    <div style={{ background:'#0f172a', minHeight:'100vh', padding:'60px 24px' }}>
-      <div style={{ maxWidth:'800px', margin:'0 auto' }}>
+    <div style={{ background:'#f8fafc', minHeight:'100vh', padding:'60px 24px' }}>
+      <div style={{ maxWidth:'800px', margin:'0 auto', background:'#ffffff', border:'1px solid #e2e8f0', borderRadius:'16px', padding:'40px', boxShadow:'0 4px 24px rgba(0,0,0,0.06)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'16px', marginBottom:'40px' }}>
-          <div style={{ width:'16px', height:'16px', borderRadius:'50%', background: isOnline ? '#22c55e' : '#ef4444' }} />
+          <div style={{ width:'16px', height:'16px', borderRadius:'50%', background: isOnline ? '#10b981' : '#ef4444' }} />
           <div>
-            <h1 style={{ color:'#f1f5f9', fontSize:'28px', fontWeight:'700' }}>{data.monitor?.name}</h1>
-            <p style={{ color:'#64748b', fontSize:'14px' }}>{data.monitor?.url}</p>
+            <h1 style={{ color:'#0f172a', fontSize:'28px', fontWeight:'700', margin:0 }}>{data.monitor?.name}</h1>
+            <p style={{ color:'#64748b', fontSize:'14px', margin:0 }}>{data.monitor?.url}</p>
           </div>
-          <div style={{ marginLeft:'auto', background: isOnline ? '#dcfce7' : '#fef2f2', color: isOnline ? '#16a34a' : '#dc2626', padding:'6px 16px', borderRadius:'20px', fontWeight:'600', fontSize:'14px' }}>
+          <div style={{ marginLeft:'auto', background: isOnline ? '#dcfce7' : '#fee2e2', color: isOnline ? '#16a34a' : '#dc2626', padding:'6px 16px', borderRadius:'20px', fontWeight:'600', fontSize:'14px' }}>
             {isOnline ? 'Operational' : 'Down'}
           </div>
         </div>
 
-        <div style={{ background:'#1e293b', borderRadius:'12px', padding:'24px', marginBottom:'24px' }}>
+        <div style={{ background:'#ffffff', borderRadius:'10px', padding:'20px', marginBottom:'24px', border:'1px solid #e2e8f0' }}>
           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'12px' }}>
-            <span style={{ color:'#94a3b8', fontSize:'14px' }}>Last 90 days</span>
-            <span style={{ color:'#22c55e', fontSize:'14px', fontWeight:'600' }}>{data.uptime_30d_percent}% uptime</span>
+            <span style={{ color:'#64748b', fontSize:'14px' }}>Last 90 days</span>
+            <span style={{ color:'#10b981', fontSize:'14px', fontWeight:'600' }}>{data.uptime_30d_percent}% uptime</span>
           </div>
-          <div style={{ display:'flex', gap:'2px', alignItems:'flex-end', height:'32px' }}>
+          <div style={{ display:'flex', gap:'2px', alignItems:'flex-end', height:'32px', background: '#f1f5f9', borderRadius: '4px', padding: '4px' }}>
             {(data.uptime_bars_90d || []).map((bar, i) => (
               <div key={i}
                 title={`${new Date(bar.date).toLocaleDateString()} — ${bar.uptime_percent}%`}
@@ -51,9 +51,9 @@ export default function StatusPage() {
           </div>
         </div>
 
-        <div style={{ background:'#1e293b', borderRadius:'12px', padding:'20px 24px', textAlign:'center' }}>
-          <p style={{ color:'#64748b', fontSize:'13px' }}>
-            Embed badge: <code style={{ color:'#94a3b8' }}>{`<img src="${API_URL}/status/badge/${monitorId}.svg" />`}</code>
+        <div style={{ background:'#f8fafc', borderRadius:'8px', padding:'12px 16px', textAlign:'center', border:'1px solid #e2e8f0' }}>
+          <p style={{ color:'#64748b', fontSize:'13px', margin:0 }}>
+            Embed badge: <code style={{ color:'#6366f1' }}>{`<img src="${API_URL}/status/badge/${monitorId}.svg" />`}</code>
           </p>
         </div>
       </div>
