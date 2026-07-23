@@ -5,7 +5,7 @@ const VALID_INTERVALS = [30, 60, 300];
 
 const createMonitor = async (req, res) => {
   try {
-    const { name, url, check_interval = 60 } = req.body;
+    const { name, url, check_interval = 60, expected_keyword = null } = req.body;
     const userId = req.userId;
     if (!name || !url) {
       return res.status(400).json({ error: 'Name and URL are required' });
@@ -26,8 +26,8 @@ const createMonitor = async (req, res) => {
       return res.status(409).json({ error: 'You are already monitoring this URL' });
     }
     const result = await pool.query(
-      `INSERT INTO monitors (user_id, name, url, check_interval) VALUES ($1, $2, $3, $4) RETURNING *`,
-      [userId, name.trim(), url, Number(check_interval)]
+      `INSERT INTO monitors (user_id, name, url, check_interval, expected_keyword) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [userId, name.trim(), url, Number(check_interval), expected_keyword]
     );
     await scheduleMonitor(result.rows[0].id, url, Number(check_interval));
     res.status(201).json({ message: 'Monitor created successfully', monitor: result.rows[0] });

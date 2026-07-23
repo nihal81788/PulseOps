@@ -13,6 +13,7 @@ CREATE TABLE monitors (
   name VARCHAR(255) NOT NULL,
   url TEXT NOT NULL,
   check_interval INTEGER NOT NULL DEFAULT 60,
+  expected_keyword TEXT DEFAULT NULL,
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()

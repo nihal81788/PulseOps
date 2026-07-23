@@ -49,6 +49,22 @@ async function processPingJob(job) {
     result.ttfbMs = t.firstByte || 0;
     result.totalMs = t.total || (Date.now() - startTime);
 
+    // User-defined keyword validation
+    const monitorConfig = await pool.query(
+      'SELECT expected_keyword FROM monitors WHERE id = $1',
+      [monitorId]
+    );
+    const expectedKeyword = monitorConfig.rows[0]?.expected_keyword;
+
+    if (expectedKeyword && response.body) {
+      const keywordFound = response.body.toLowerCase().includes(expectedKeyword.toLowerCase());
+      if (!keywordFound) {
+        result.isUp = false;
+        result.errorMessage = `Expected keyword "${expectedKeyword}" not found in response body`;
+        console.warn(`⚠️ Keyword check failed for ${url}: "${expectedKeyword}" not found`);
+      }
+    }
+
     const contentType = response.headers['content-type'] || '';
     const bodyStr = typeof response.body === 'string' ? response.body.toLowerCase() : '';
     const errorIndicators = ['<title>404</title>', 'not found', 'error', 'forbidden', 'access denied'];
@@ -170,6 +186,13 @@ async function extractAndSaveSSLInfo(monitorId, url) {
               daysUntilExpiry,
             ]
           ).catch(console.error);
+
+          if (daysUntilExpiry <= 14 && daysUntilExpiry > 0) {
+            const { dispatchAlerts } = require('../services/alertService');
+            console.warn(`⚠️ SSL EXPIRY WARNING: Monitor ${monitorId} cert expires in ${daysUntilExpiry} days`);
+            dispatchAlerts(monitorId, 999, `SSL certificate expires in ${daysUntilExpiry} days — renew immediately`).catch(console.error);
+          }
+
           resolve();
         }
       );

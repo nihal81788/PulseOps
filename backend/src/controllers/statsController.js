@@ -71,6 +71,17 @@ const getLatencyStats = async (req, res) => {
         };
         if (regression.is_regression) {
           console.warn(`⚠️ REGRESSION: Monitor ${id} is ${changePercent.toFixed(1)}% slower than 7-day average`);
+          // Fire alert through existing alert pipeline
+          try {
+            const { dispatchAlerts } = require('../services/alertService');
+            await dispatchAlerts(
+              id,
+              2,  // trigger_level 2 so email rules fire
+              `Performance regression detected: latency increased by ${changePercent.toFixed(1)}% compared to 7-day average (current: ${currentAvg}ms, baseline: ${trailing7dAvg}ms)`
+            );
+          } catch (alertError) {
+            console.error('Failed to send regression alert:', alertError.message);
+          }
         }
       }
     }

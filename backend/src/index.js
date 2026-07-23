@@ -74,6 +74,7 @@ app.use('/api', require('./routes/regionalStats'));
 app.use('/status', require('./routes/statusPages'));
 app.get('/api/monitors/:id/uptime-bars', require('./controllers/statsController').getUptimeBars);
 app.get('/api/monitors/:id/ping-now-history', require('./controllers/statsController').getPingHistory);
+app.use('/api/traceroute', require('./routes/traceroute'));
 
 app.get('/api/workers/status', async (req, res) => {
   const { getQueueStats } = require('./queues/pingQueue');
