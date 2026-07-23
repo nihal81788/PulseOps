@@ -6,7 +6,10 @@ export default function Navbar() {
   return (
     <nav style={{ background:'#ffffff', borderBottom:'1px solid #e2e8f0', boxShadow:'0 1px 3px rgba(0,0,0,0.06)', padding:'0 24px', height:'56px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
       <div style={{ display:'flex', gap:'24px', alignItems:'center', height: '100%' }}>
-        <Link to="/" style={{ color:'#0f172a', fontWeight:'700', fontSize:'18px', textDecoration:'none' }}>⚡ PulseOps</Link>
+        <Link to="/" style={{ color:'#0f172a', fontWeight:'700', fontSize:'18px', textDecoration:'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src="/logo.png" alt="PulseOps Logo" style={{ height: '24px' }} />
+          PulseOps
+        </Link>
         <Link to="/" style={{ color:'#64748b', fontSize:'14px', textDecoration:'none', borderBottom: '2px solid #6366f1', height: '100%', display: 'flex', alignItems: 'center' }}>Monitors</Link>
         <Link to="/incidents" style={{ color:'#64748b', fontSize:'14px', textDecoration:'none', height: '100%', display: 'flex', alignItems: 'center' }}>Incidents</Link>
       </div>
