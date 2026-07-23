@@ -115,6 +115,26 @@ async function sendSMSAlert(phoneNumber, monitorName, monitorUrl, message) {
   }
 }
 
+async function sendPhoneCallAlert(phoneNumber, monitorName) {
+  try {
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+      console.log('⚠️ Twilio not configured — skipping Phone Call');
+      return false;
+    }
+    const twilio = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    await twilio.calls.create({
+      twiml: `<Response><Say>Pulse Ops Alert. Your monitor, ${monitorName}, is down. Please check your dashboard immediately.</Say></Response>`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phoneNumber,
+    });
+    console.log(`📞 Phone call placed to ${phoneNumber}`);
+    return true;
+  } catch (error) {
+    console.error('Phone call failed:', error.message);
+    return false;
+  }
+}
+
 async function dispatchAlerts(monitorId, failureCount, errorMessage) {
   try {
     const monitorResult = await pool.query(
@@ -180,6 +200,9 @@ async function dispatchAlerts(monitorId, failureCount, errorMessage) {
           break;
         case 'sms':
           sent = await sendSMSAlert(rule.destination, monitor.name, monitor.url, errorMessage);
+          break;
+        case 'call':
+          sent = await sendPhoneCallAlert(rule.destination, monitor.name);
           break;
       }
 
