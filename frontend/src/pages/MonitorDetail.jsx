@@ -12,6 +12,8 @@ export default function MonitorDetail() {
   const [monitor, setMonitor] = useState(null);
   const [stats, setStats] = useState(null);
   const [ssl, setSSL] = useState(null);
+  const [traceroute, setTraceroute] = useState(null);
+  const [tracing, setTracing] = useState(false);
 
   const { latestResults } = useWebSocket([id]);
   const liveResult = latestResults[id];
@@ -23,6 +25,19 @@ export default function MonitorDetail() {
   }, [id]);
 
   if (!monitor) return <div style={{ padding:'40px', color:'#64748b', background:'#f8fafc', minHeight:'100vh' }}>Loading...</div>;
+
+  const runTraceroute = async () => {
+    setTracing(true);
+    setTraceroute(null);
+    try {
+      const res = await apiClient.post('/traceroute', { monitor_id: id });
+      setTraceroute(res.data);
+    } catch (err) {
+      alert('Traceroute failed');
+    } finally {
+      setTracing(false);
+    }
+  };
 
   const isUp = liveResult ? liveResult.isUp : null;
   const dotColor = isUp === null ? '#94a3b8' : isUp ? '#10b981' : '#ef4444';
@@ -81,6 +96,28 @@ export default function MonitorDetail() {
           {ssl.expiry_warning && <div style={{ marginTop:'12px', color:'#92400e', background:'#fef9c3', borderRadius:'6px', padding:'10px 14px', fontSize:'14px' }}>⚠️ {ssl.expiry_warning_message}</div>}
         </div>
       )}
+
+      <div style={{ background:'#ffffff', border:'1px solid #e2e8f0', borderRadius:'10px', padding:'24px', marginTop:'20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h3 style={{ color:'#0f172a', margin: 0, fontSize:'16px' }}>Network Traceroute</h3>
+          <button onClick={runTraceroute} disabled={tracing} style={{ padding:'8px 16px', background:'#6366f1', color:'#fff', border:'none', borderRadius:'8px', cursor: tracing ? 'not-allowed' : 'pointer', fontWeight:'600' }}>
+            {tracing ? 'Tracing...' : 'Run Traceroute'}
+          </button>
+        </div>
+        
+        {traceroute && (
+          <div style={{ background: '#f1f5f9', padding: '16px', borderRadius: '8px', overflowX: 'auto', fontFamily: 'monospace', fontSize: '13px', color: '#334155' }}>
+            <div style={{ marginBottom: '12px', fontWeight: 'bold' }}>Target: {traceroute.target}</div>
+            {traceroute.hops.map((hop, i) => (
+              <div key={i} style={{ display: 'flex', gap: '16px', padding: '4px 0', borderBottom: '1px solid #e2e8f0' }}>
+                <span style={{ width: '24px', color: '#94a3b8' }}>{hop.hop}</span>
+                <span style={{ width: '200px' }}>{hop.ip || '*'}</span>
+                <span style={{ flex: 1 }}>{hop.rtt1 || '*'}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

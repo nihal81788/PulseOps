@@ -9,7 +9,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showHealth, setShowHealth] = useState(false);
-  const [newMonitor, setNewMonitor] = useState({ name:'', url:'', check_interval:60 });
+  const [newMonitor, setNewMonitor] = useState({ name:'', url:'', check_interval:60, expected_keyword:'' });
   const [error, setError] = useState('');
 
   const monitorIds = monitors.map(m => m.id);
@@ -28,7 +28,7 @@ export default function Dashboard() {
       const res = await apiClient.post('/monitors', newMonitor);
       setMonitors(prev => [res.data.monitor, ...prev]);
       setShowForm(false);
-      setNewMonitor({ name:'', url:'', check_interval:60 });
+      setNewMonitor({ name:'', url:'', check_interval:60, expected_keyword:'' });
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to add monitor');
     }
@@ -83,6 +83,8 @@ export default function Dashboard() {
               <option value={60}>Every 60s</option>
               <option value={300}>Every 5min</option>
             </select>
+            <input placeholder="Expected Keyword (Optional)" value={newMonitor.expected_keyword} onChange={e => setNewMonitor(p => ({...p, expected_keyword:e.target.value}))}
+              style={{ padding:'10px 14px', borderRadius:'8px', border:'1px solid #e2e8f0', background:'#ffffff', color:'#0f172a', flex:'1', minWidth:'200px', outline:'none' }} />
             <button type="submit" style={{ padding:'10px 20px', background:'#6366f1', color:'#fff', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600' }}>Create</button>
             <button type="button" onClick={() => setShowForm(false)} style={{ padding:'10px 20px', background:'#ffffff', color:'#64748b', border:'1px solid #e2e8f0', borderRadius:'8px', cursor:'pointer' }}>Cancel</button>
           </form>
