@@ -29,8 +29,20 @@ const createMonitor = async (req, res) => {
       `INSERT INTO monitors (user_id, name, url, check_interval, expected_keyword) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [userId, name.trim(), url, Number(check_interval), expected_keyword]
     );
-    await scheduleMonitor(result.rows[0].id, url, Number(check_interval));
-    res.status(201).json({ message: 'Monitor created successfully', monitor: result.rows[0] });
+    const newMonitor = result.rows[0];
+
+    // Auto-create a default email alert rule (Level 1 escalation: after 2 failures)
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [userId]);
+    if (userRes.rows.length > 0) {
+      await pool.query(
+        `INSERT INTO alert_rules (monitor_id, channel, destination, trigger_level, cooldown_minutes) 
+         VALUES ($1, 'email', $2, 2, 15)`,
+        [newMonitor.id, userRes.rows[0].email]
+      );
+    }
+
+    await scheduleMonitor(newMonitor.id, url, Number(check_interval));
+    res.status(201).json({ message: 'Monitor created successfully', monitor: newMonitor });
   } catch (error) {
     console.error('CreateMonitor error:', error);
     res.status(500).json({ error: 'Failed to create monitor' });
