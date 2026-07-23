@@ -2,6 +2,10 @@ const pool = require('../config/db');
 
 async function createIncident(monitorId) {
   try {
+    // Check if monitor still exists before creating incident (prevents FK error if deleted)
+    const monitorExists = await pool.query('SELECT id FROM monitors WHERE id = $1', [monitorId]);
+    if (monitorExists.rows.length === 0) return null;
+
     const existing = await pool.query(
       'SELECT id FROM incidents WHERE monitor_id = $1 AND is_resolved = false',
       [monitorId]
