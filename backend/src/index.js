@@ -111,8 +111,17 @@ httpServer.listen(PORT, () => console.log(`🚀 PulseOps backend running on http
 
 require('./workers/pingWorker');
 
-async function restoreMonitorSchedules() {
+async function initDBAndSchedules() {
   const pool = require('./config/db');
+  
+  // Auto-migration for expected_keyword
+  try {
+    await pool.query('ALTER TABLE monitors ADD COLUMN IF NOT EXISTS expected_keyword TEXT DEFAULT NULL;');
+    console.log('✅ DB Schema verified/updated');
+  } catch (err) {
+    console.error('Failed to auto-migrate DB:', err);
+  }
+
   const { scheduleMonitor } = require('./queues/pingQueue');
   try {
     const result = await pool.query('SELECT id, url, check_interval FROM monitors WHERE is_active = true');
@@ -124,6 +133,6 @@ async function restoreMonitorSchedules() {
   }
 }
 
-restoreMonitorSchedules();
+initDBAndSchedules();
 
 module.exports = { app, io, httpServer };
